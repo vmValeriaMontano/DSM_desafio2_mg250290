@@ -2,12 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/home"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".AuthActivity"
+    tools:context=".HomeActivity"
     android:layout_marginLeft="@dimen/padding_standard"
     android:layout_marginTop="@dimen/padding_standard"
     android:layout_marginRight="@dimen/padding_standard">
@@ -20,18 +20,18 @@
         android:textStyle="bold"
         android:gravity="center"
         android:layout_marginBottom="@dimen/margin_medium"/>
-    <EditText
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/emailEditText"
+        android:id="@+id/emailTextView"
         android:text="Email"
         />
 
-    <EditText
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/passwordEditText"
-        android:text="Contraseña"
+        android:id="@+id/providerTextView"
+        android:text="Proveedor"
         />
 
     <LinearLayout
@@ -40,19 +40,12 @@
         android:orientation="horizontal"
         android:layout_marginTop="@dimen/margin_medium">
         <Button
-            android:id="@+id/singUpButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="@dimen/authBtns"
-            android:text="Registrar" />
-        <Button
-            android:id="@+id/loginButton"
+            android:id="@+id/btnCerrarSesion"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="@dimen/authBtns"
-            android:text="Acceder" />
+            android:text="Cerrar Sesion" />
     </LinearLayout>
 
 
