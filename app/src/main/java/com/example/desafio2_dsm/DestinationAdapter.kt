@@ -20,25 +20,39 @@ class DestinationAdapter(
     ) : RecyclerView.ViewHolder(itemView) {
 
         val image: ImageView =
-            itemView.findViewById(R.id.destinationImageView)
+            itemView.findViewById(
+                R.id.destinationImageView
+            )
 
         val name: TextView =
-            itemView.findViewById(R.id.destinationNameTextView)
+            itemView.findViewById(
+                R.id.destinationNameTextView
+            )
 
         val country: TextView =
-            itemView.findViewById(R.id.countryTextView)
+            itemView.findViewById(
+                R.id.countryTextView
+            )
 
         val price: TextView =
-            itemView.findViewById(R.id.priceTextView)
+            itemView.findViewById(
+                R.id.priceTextView
+            )
 
         val description: TextView =
-            itemView.findViewById(R.id.descriptionTextView)
+            itemView.findViewById(
+                R.id.descriptionTextView
+            )
 
         val editButton: Button =
-            itemView.findViewById(R.id.btnEditar)
+            itemView.findViewById(
+                R.id.btnEditar
+            )
 
         val deleteButton: Button =
-            itemView.findViewById(R.id.btnEliminar)
+            itemView.findViewById(
+                R.id.btnEliminar
+            )
     }
 
     override fun onCreateViewHolder(
@@ -46,8 +60,10 @@ class DestinationAdapter(
         viewType: Int
     ): DestinationViewHolder {
 
-        val view = LayoutInflater.from(parent.context)
-            .inflate(
+        val view =
+            LayoutInflater.from(
+                parent.context
+            ).inflate(
                 R.layout.item_destination,
                 parent,
                 false
@@ -61,9 +77,11 @@ class DestinationAdapter(
         position: Int
     ) {
 
-        val destination = destinations[position]
+        val destination =
+            destinations[position]
 
-        holder.name.text = destination.name
+        holder.name.text =
+            destination.name
 
         holder.country.text =
             "País: ${destination.country}"
@@ -74,23 +92,80 @@ class DestinationAdapter(
         holder.description.text =
             destination.description
 
-        // Mostrar imagen
-        Glide.with(holder.itemView.context)
-            .load(destination.imageUrl)
-            .placeholder(android.R.drawable.ic_menu_gallery)
-            .error(android.R.drawable.ic_menu_gallery)
-            .into(holder.image)
+        /*
+         * Limpiar cualquier imagen anterior
+         * debido al reciclaje del RecyclerView.
+         */
+        Glide.with(
+            holder.itemView.context
+        ).clear(holder.image)
 
-        // Botón editar
-        holder.editButton.setOnClickListener {
+        /*
+         * Primero intentamos mostrar la imagen
+         * guardada como Base64.
+         */
+        if (
+            destination.imageBase64.isNotEmpty()
+        ) {
 
-            onEditClick(destination)
+            val bitmap =
+                ImageUtils.base64ToBitmap(
+                    destination.imageBase64
+                )
+
+            if (bitmap != null) {
+
+                holder.image.setImageBitmap(
+                    bitmap
+                )
+
+            } else {
+
+                holder.image.setImageResource(
+                    android.R.drawable.ic_menu_gallery
+                )
+            }
+
+        }
+        else if (
+            destination.imageUrl.isNotEmpty()
+        ) {
+
+            Glide.with(
+                holder.itemView.context
+            )
+                .load(destination.imageUrl)
+                .placeholder(
+                    android.R.drawable.ic_menu_gallery
+                )
+                .error(
+                    android.R.drawable.ic_menu_gallery
+                )
+                .into(holder.image)
+
+        }
+        /*
+         * Si no tiene imagen.
+         */
+        else {
+
+            holder.image.setImageResource(
+                android.R.drawable.ic_menu_gallery
+            )
         }
 
-        // Botón eliminar
+        holder.editButton.setOnClickListener {
+
+            onEditClick(
+                destination
+            )
+        }
+
         holder.deleteButton.setOnClickListener {
 
-            onDeleteClick(destination)
+            onDeleteClick(
+                destination
+            )
         }
     }
 
@@ -103,15 +178,14 @@ class DestinationAdapter(
         newList: List<Destination>
     ) {
 
-        // IMPORTANTE:
-        // Hacemos una copia para evitar que
-        // newList sea la misma lista que destinations.
         val copyOfList =
             newList.toList()
 
         destinations.clear()
 
-        destinations.addAll(copyOfList)
+        destinations.addAll(
+            copyOfList
+        )
 
         notifyDataSetChanged()
     }

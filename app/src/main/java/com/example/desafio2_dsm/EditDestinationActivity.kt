@@ -28,6 +28,8 @@ class EditDestinationActivity : AppCompatActivity() {
 
     private var currentImageUrl = ""
 
+    private var currentImageBase64 = ""
+
     private lateinit var destinationId: String
 
     private val countries = listOf(
@@ -44,37 +46,60 @@ class EditDestinationActivity : AppCompatActivity() {
         "Estados Unidos"
     )
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(
+        savedInstanceState: Bundle?
+    ) {
+
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-        setContentView(R.layout.activity_edit_destination)
 
-        // Firebase Realtime Database
-        database = FirebaseDatabase.getInstance()
+        setContentView(
+            R.layout.activity_edit_destination
+        )
+
+        database =
+            FirebaseDatabase.getInstance()
 
         destinationId =
-            intent.getStringExtra("destinationId")
+            intent.getStringExtra(
+                "destinationId"
+            )
                 ?: run {
-                    showError("No se encontró el ID del destino.")
+
+                    showError(
+                        "No se encontró el ID del destino."
+                    )
+
                     finish()
+
                     return
                 }
 
         nameEditText =
-            findViewById(R.id.nameEditText)
+            findViewById(
+                R.id.nameEditText
+            )
 
         countrySpinner =
-            findViewById(R.id.countrySpinner)
+            findViewById(
+                R.id.countrySpinner
+            )
 
         priceEditText =
-            findViewById(R.id.priceEditText)
+            findViewById(
+                R.id.priceEditText
+            )
 
         descriptionEditText =
-            findViewById(R.id.descriptionEditText)
+            findViewById(
+                R.id.descriptionEditText
+            )
 
         previewImageView =
-            findViewById(R.id.previewImageView)
+            findViewById(
+                R.id.previewImageView
+            )
 
         val selectImageButton =
             findViewById<Button>(
@@ -101,23 +126,27 @@ class EditDestinationActivity : AppCompatActivity() {
 
     private fun setupSpinner() {
 
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            countries
-        )
+        val adapter =
+            ArrayAdapter(
+                this,
+                android.R.layout.simple_spinner_item,
+                countries
+            )
 
         adapter.setDropDownViewResource(
             android.R.layout.simple_spinner_dropdown_item
         )
 
-        countrySpinner.adapter = adapter
+        countrySpinner.adapter =
+            adapter
     }
 
     private fun loadDestination() {
 
         database
-            .getReference("destinations")
+            .getReference(
+                "destinations"
+            )
             .child(destinationId)
             .get()
 
@@ -146,26 +175,48 @@ class EditDestinationActivity : AppCompatActivity() {
                     return@addOnSuccessListener
                 }
 
-                // Nombre
                 nameEditText.setText(
                     destination.name
                 )
 
-                // Precio
                 priceEditText.setText(
                     destination.price.toString()
                 )
 
-                // Descripción
                 descriptionEditText.setText(
                     destination.description
                 )
 
-                // Imagen actual
                 currentImageUrl =
                     destination.imageUrl
 
-                if (currentImageUrl.isNotEmpty()) {
+                currentImageBase64 =
+                    destination.imageBase64
+
+                /*
+                 * Primero intentamos mostrar la imagen
+                 * Base64.
+                 */
+                if (
+                    currentImageBase64.isNotEmpty()
+                ) {
+
+                    val bitmap =
+                        ImageUtils.base64ToBitmap(
+                            currentImageBase64
+                        )
+
+                    if (bitmap != null) {
+
+                        previewImageView
+                            .setImageBitmap(
+                                bitmap
+                            )
+                    }
+                }
+                else if (
+                    currentImageUrl.isNotEmpty()
+                ) {
 
                     Glide.with(this)
                         .load(currentImageUrl)
@@ -175,10 +226,11 @@ class EditDestinationActivity : AppCompatActivity() {
                         .error(
                             android.R.drawable.ic_menu_gallery
                         )
-                        .into(previewImageView)
+                        .into(
+                            previewImageView
+                        )
                 }
 
-                // País
                 val countryIndex =
                     countries.indexOf(
                         destination.country
@@ -186,9 +238,10 @@ class EditDestinationActivity : AppCompatActivity() {
 
                 if (countryIndex >= 0) {
 
-                    countrySpinner.setSelection(
-                        countryIndex
-                    )
+                    countrySpinner
+                        .setSelection(
+                            countryIndex
+                        )
                 }
             }
 
@@ -232,13 +285,15 @@ class EditDestinationActivity : AppCompatActivity() {
             resultCode == RESULT_OK
         ) {
 
-            imageUri = data?.data
+            imageUri =
+                data?.data
 
             if (imageUri != null) {
 
-                previewImageView.setImageURI(
-                    imageUri
-                )
+                previewImageView
+                    .setImageURI(
+                        imageUri
+                    )
             }
         }
     }
@@ -265,7 +320,6 @@ class EditDestinationActivity : AppCompatActivity() {
                 .toString()
                 .trim()
 
-        // Validar campos
         if (
             name.isEmpty() ||
             priceText.isEmpty() ||
@@ -282,7 +336,6 @@ class EditDestinationActivity : AppCompatActivity() {
             return
         }
 
-        // Validar precio
         val price =
             priceText.toDoubleOrNull()
 
@@ -300,7 +353,6 @@ class EditDestinationActivity : AppCompatActivity() {
             return
         }
 
-        // Validar descripción
         if (description.length < 20) {
 
             showError(
@@ -311,29 +363,43 @@ class EditDestinationActivity : AppCompatActivity() {
 
             return
         }
+        val newImageBase64: String
 
-        /*
-         * IMPORTANTE:
-         *
-         * No usamos Firebase Storage.
-         *
-         * Si el usuario NO seleccionó una imagen nueva,
-         * conservamos la imagen que ya tenía.
-         *
-         * Si seleccionó una imagen nueva, guardamos
-         * temporalmente su URI local.
-         */
+        if (imageUri != null) {
 
-        val imageToSave =
-            imageUri?.toString()
-                ?: currentImageUrl
+            val converted =
+                ImageUtils.uriToBase64(
+                    this,
+                    imageUri!!
+                )
+
+            if (
+                converted == null ||
+                converted.isEmpty()
+            ) {
+
+                showError(
+                    "No se pudo procesar la nueva imagen."
+                )
+
+                return
+            }
+
+            newImageBase64 =
+                converted
+
+        } else {
+
+            newImageBase64 =
+                currentImageBase64
+        }
 
         saveChanges(
             name = name,
             country = country,
             price = price,
             description = description,
-            imageUrl = imageToSave
+            imageBase64 = newImageBase64
         )
     }
 
@@ -342,7 +408,7 @@ class EditDestinationActivity : AppCompatActivity() {
         country: String,
         price: Double,
         description: String,
-        imageUrl: String
+        imageBase64: String
     ) {
 
         val updates =
@@ -351,11 +417,14 @@ class EditDestinationActivity : AppCompatActivity() {
                 "country" to country,
                 "price" to price,
                 "description" to description,
-                "imageUrl" to imageUrl
+                "imageBase64" to imageBase64,
+                "imageUrl" to ""
             )
 
         database
-            .getReference("destinations")
+            .getReference(
+                "destinations"
+            )
             .child(destinationId)
             .updateChildren(updates)
 

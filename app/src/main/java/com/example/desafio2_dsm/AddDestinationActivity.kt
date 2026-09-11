@@ -43,22 +43,38 @@ class AddDestinationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-        setContentView(R.layout.activity_add_destination)
 
-        // Realtime Database
-        database = FirebaseDatabase.getInstance()
+        setContentView(
+            R.layout.activity_add_destination
+        )
 
-        nameEditText = findViewById(R.id.nameEditText)
-        countrySpinner = findViewById(R.id.countrySpinner)
-        priceEditText = findViewById(R.id.priceEditText)
-        descriptionEditText = findViewById(R.id.descriptionEditText)
-        previewImageView = findViewById(R.id.previewImageView)
+        database =
+            FirebaseDatabase.getInstance()
+
+        nameEditText =
+            findViewById(R.id.nameEditText)
+
+        countrySpinner =
+            findViewById(R.id.countrySpinner)
+
+        priceEditText =
+            findViewById(R.id.priceEditText)
+
+        descriptionEditText =
+            findViewById(R.id.descriptionEditText)
+
+        previewImageView =
+            findViewById(R.id.previewImageView)
 
         val selectImageButton =
-            findViewById<Button>(R.id.selectImageButton)
+            findViewById<Button>(
+                R.id.selectImageButton
+            )
 
         val saveButton =
-            findViewById<Button>(R.id.saveButton)
+            findViewById<Button>(
+                R.id.saveButton
+            )
 
         setupSpinner()
 
@@ -73,11 +89,12 @@ class AddDestinationActivity : AppCompatActivity() {
 
     private fun setupSpinner() {
 
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            countries
-        )
+        val adapter =
+            ArrayAdapter(
+                this,
+                android.R.layout.simple_spinner_item,
+                countries
+            )
 
         adapter.setDropDownViewResource(
             android.R.layout.simple_spinner_dropdown_item
@@ -88,7 +105,8 @@ class AddDestinationActivity : AppCompatActivity() {
 
     private fun selectImage() {
 
-        val intent = Intent(Intent.ACTION_PICK)
+        val intent =
+            Intent(Intent.ACTION_PICK)
 
         intent.type = "image/*"
 
@@ -119,7 +137,10 @@ class AddDestinationActivity : AppCompatActivity() {
             imageUri = data?.data
 
             if (imageUri != null) {
-                previewImageView.setImageURI(imageUri)
+
+                previewImageView.setImageURI(
+                    imageUri
+                )
             }
         }
     }
@@ -127,16 +148,23 @@ class AddDestinationActivity : AppCompatActivity() {
     private fun saveDestination() {
 
         val name =
-            nameEditText.text.toString().trim()
+            nameEditText.text
+                .toString()
+                .trim()
 
         val country =
-            countrySpinner.selectedItem.toString()
+            countrySpinner.selectedItem
+                .toString()
 
         val priceText =
-            priceEditText.text.toString().trim()
+            priceEditText.text
+                .toString()
+                .trim()
 
         val description =
-            descriptionEditText.text.toString().trim()
+            descriptionEditText.text
+                .toString()
+                .trim()
 
         // Validar campos
         if (
@@ -147,19 +175,27 @@ class AddDestinationActivity : AppCompatActivity() {
         ) {
 
             showError(
-                getString(R.string.required_fields)
+                getString(
+                    R.string.required_fields
+                )
             )
 
             return
         }
 
         // Validar precio
-        val price = priceText.toDoubleOrNull()
+        val price =
+            priceText.toDoubleOrNull()
 
-        if (price == null || price <= 0) {
+        if (
+            price == null ||
+            price <= 0
+        ) {
 
             showError(
-                getString(R.string.invalid_price)
+                getString(
+                    R.string.invalid_price
+                )
             )
 
             return
@@ -169,17 +205,45 @@ class AddDestinationActivity : AppCompatActivity() {
         if (description.length < 20) {
 
             showError(
-                getString(R.string.short_description)
+                getString(
+                    R.string.short_description
+                )
             )
 
             return
         }
 
         // Validar imagen
-        if (imageUri == null) {
+        val selectedUri =
+            imageUri
+
+        if (selectedUri == null) {
 
             showError(
-                getString(R.string.required_image)
+                getString(
+                    R.string.required_image
+                )
+            )
+
+            return
+        }
+
+        /*
+         * Convertimos la imagen a Base64.
+         */
+        val imageBase64 =
+            ImageUtils.uriToBase64(
+                this,
+                selectedUri
+            )
+
+        if (
+            imageBase64 == null ||
+            imageBase64.isEmpty()
+        ) {
+
+            showError(
+                "No se pudo procesar la imagen."
             )
 
             return
@@ -190,7 +254,7 @@ class AddDestinationActivity : AppCompatActivity() {
             country = country,
             price = price,
             description = description,
-            imageUrl = imageUri.toString()
+            imageBase64 = imageBase64
         )
     }
 
@@ -199,16 +263,14 @@ class AddDestinationActivity : AppCompatActivity() {
         country: String,
         price: Double,
         description: String,
-        imageUrl: String
+        imageBase64: String
     ) {
 
-        // Referencia:
-        // Realtime Database
-        // destinations/
         val destinationsRef =
-            database.getReference("destinations")
+            database.getReference(
+                "destinations"
+            )
 
-        // Generar ID automáticamente
         val id =
             destinationsRef.push().key
 
@@ -221,17 +283,17 @@ class AddDestinationActivity : AppCompatActivity() {
             return
         }
 
-        // Crear objeto Destination
-        val destination = Destination(
-            id = id,
-            name = name,
-            country = country,
-            price = price,
-            description = description,
-            imageUrl = imageUrl
-        )
+        val destination =
+            Destination(
+                id = id,
+                name = name,
+                country = country,
+                price = price,
+                description = description,
+                imageUrl = "",
+                imageBase64 = imageBase64
+            )
 
-        // Guardar en Realtime Database
         destinationsRef
             .child(id)
             .setValue(destination)
@@ -239,7 +301,9 @@ class AddDestinationActivity : AppCompatActivity() {
 
                 AlertDialog.Builder(this)
                     .setTitle(
-                        getString(R.string.success)
+                        getString(
+                            R.string.success
+                        )
                     )
                     .setMessage(
                         getString(
@@ -247,8 +311,11 @@ class AddDestinationActivity : AppCompatActivity() {
                         )
                     )
                     .setPositiveButton(
-                        getString(R.string.accept)
+                        getString(
+                            R.string.accept
+                        )
                     ) { _, _ ->
+
                         finish()
                     }
                     .show()
@@ -257,7 +324,9 @@ class AddDestinationActivity : AppCompatActivity() {
 
                 showError(
                     exception.message
-                        ?: getString(R.string.error)
+                        ?: getString(
+                            R.string.error
+                        )
                 )
             }
     }
@@ -268,11 +337,15 @@ class AddDestinationActivity : AppCompatActivity() {
 
         AlertDialog.Builder(this)
             .setTitle(
-                getString(R.string.error)
+                getString(
+                    R.string.error
+                )
             )
             .setMessage(message)
             .setPositiveButton(
-                getString(R.string.accept),
+                getString(
+                    R.string.accept
+                ),
                 null
             )
             .show()
