@@ -5,9 +5,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    android:layout_margin="@dimen/card_margin"
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="@dimen/card_radius"
+    app:cardElevation="@dimen/card_elevation">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,7 +18,8 @@
         <ImageView
             android:id="@+id/destinationImageView"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="@dimen/destination_image_height"
+            android:background="@color/primary_light"
             android:contentDescription="@string/select_image"
             android:scaleType="centerCrop" />
 
@@ -25,54 +27,74 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="@dimen/card_padding">
 
             <TextView
                 android:id="@+id/destinationNameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_size_title"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/countryTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" />
+                android:layout_marginTop="@dimen/margin_xsmall"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_size_small" />
 
             <TextView
                 android:id="@+id/priceTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/margin_small"
+                android:textColor="@color/primary"
+                android:textSize="@dimen/text_size_medium"
                 android:textStyle="bold" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/divider_height"
+                android:layout_marginTop="@dimen/margin_small"
+                android:background="@color/divider" />
 
             <TextView
                 android:id="@+id/descriptionTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp" />
+                android:layout_marginTop="@dimen/margin_small"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_size_normal" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="@dimen/margin_medium"
                 android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/btnEditar"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="@dimen/button_min_height"
+                    android:layout_marginEnd="@dimen/margin_xsmall"
                     android:layout_weight="1"
-                    android:text="@string/edit" />
+                    android:backgroundTint="@color/primary"
+                    android:text="@string/edit"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/btnEliminar"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_height="@dimen/button_min_height"
+                    android:layout_marginStart="@dimen/margin_xsmall"
                     android:layout_weight="1"
-                    android:text="@string/delete" />
+                    android:backgroundTint="@color/accent"
+                    android:text="@string/delete"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 

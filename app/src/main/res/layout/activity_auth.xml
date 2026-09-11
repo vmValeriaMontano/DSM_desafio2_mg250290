@@ -5,57 +5,72 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginStart="@dimen/padding_standard"
-    android:layout_marginTop="@dimen/padding_standard"
-    android:layout_marginEnd="@dimen/padding_standard"
+    android:background="@color/background"
     android:gravity="center"
     android:orientation="vertical"
+    android:padding="@dimen/padding_large"
     tools:context=".AuthActivity">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/margin_medium"
+        android:layout_marginBottom="@dimen/margin_large"
         android:gravity="center"
         android:text="@string/welcome"
-        android:textSize="@dimen/text_size_title"
+        android:textColor="@color/primary"
+        android:textSize="@dimen/text_size_large"
         android:textStyle="bold" />
 
     <EditText
         android:id="@+id/emailEditText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/input_height"
+        android:backgroundTint="@color/primary"
         android:hint="@string/email"
-        android:inputType="textEmailAddress" />
+        android:inputType="textEmailAddress"
+        android:padding="@dimen/input_padding"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_secondary" />
 
     <EditText
         android:id="@+id/passwordEditText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/input_height"
+        android:layout_marginTop="@dimen/margin_medium"
+        android:backgroundTint="@color/primary"
         android:hint="@string/password"
-        android:inputType="textPassword" />
+        android:inputType="textPassword"
+        android:padding="@dimen/input_padding"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_secondary" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_medium"
+        android:layout_marginTop="@dimen/margin_large"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/singUpButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/button_height"
             android:layout_marginEnd="@dimen/authBtns"
             android:layout_weight="1"
-            android:text="@string/register" />
+            android:backgroundTint="@color/accent"
+            android:text="@string/register"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/loginButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/button_height"
             android:layout_marginStart="@dimen/authBtns"
             android:layout_weight="1"
-            android:text="@string/login" />
+            android:backgroundTint="@color/primary"
+            android:text="@string/login"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
 
     </LinearLayout>
 
