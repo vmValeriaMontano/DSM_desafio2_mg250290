@@ -1,3 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Viajes Felices</string>
+
+    <string name="app_name">Agencia de Viajes</string>
+
+    <!-- Autenticación -->
+    <string name="welcome">Bienvenido/a</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="register">Registrar</string>
+    <string name="login">Acceder</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="provider">Proveedor</string>
+
+    <!-- Destinos -->
+    <string name="catalog">Catálogo de destinos</string>
+    <string name="add_destination">Agregar destino</string>
+    <string name="edit_destination">Editar destino</string>
+    <string name="destination_name">Nombre del destino</string>
+    <string name="country">País</string>
+    <string name="price">Precio del paquete</string>
+    <string name="description">Descripción del viaje</string>
+    <string name="select_image">Seleccionar imagen</string>
+    <string name="save">Guardar</string>
+    <string name="update">Actualizar</string>
+    <string name="edit">Editar</string>
+    <string name="delete">Eliminar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="confirm_delete">Confirmar eliminación</string>
+    <string name="delete_message">¿Deseas eliminar este destino?</string>
+
+    <!-- Mensajes -->
+    <string name="error">Error</string>
+    <string name="success">Éxito</string>
+    <string name="accept">Aceptar</string>
+    <string name="required_fields">Todos los campos son obligatorios.</string>
+    <string name="invalid_price">El precio debe ser mayor a 0.</string>
+    <string name="short_description">La descripción debe tener al menos 20 caracteres.</string>
+    <string name="required_image">Debes seleccionar una imagen.</string>
+    <string name="invalid_email">Ingresa un correo válido.</string>
+    <string name="invalid_password">La contraseña debe tener al menos 6 caracteres.</string>
+    <string name="destination_saved">Destino guardado correctamente.</string>
+    <string name="destination_updated">Destino actualizado correctamente.</string>
+    <string name="destination_deleted">Destino eliminado correctamente.</string>
+
+    <!-- Países -->
+    <string name="select_country">Selecciona un país</string>
+    <string name="mexico">México</string>
+    <string name="el_salvador">El Salvador</string>
+    <string name="guatemala">Guatemala</string>
+    <string name="costa_rica">Costa Rica</string>
+    <string name="colombia">Colombia</string>
+    <string name="espana">España</string>
+    <string name="francia">Francia</string>
+    <string name="italia">Italia</string>
+    <string name="japon">Japón</string>
+    <string name="estados_unidos">Estados Unidos</string>
+
 </resources>
