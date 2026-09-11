@@ -1,0 +1,10 @@
+package com.example.desafio2_dsm
+
+data class Destination(
+    var id: String = "",
+    var name: String = "",
+    var country: String = "",
+    var price: Double = 0.0,
+    var description: String = "",
+    var imageUrl: String = ""
+)
