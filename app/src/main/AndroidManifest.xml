@@ -11,18 +11,35 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Desafio2_DSM">
+
+        <!-- Pantalla para agregar destinos -->
+        <activity
+            android:name=".AddDestinationActivity"
+            android:exported="false" />
+
+        <!-- Pantalla para editar destinos -->
+        <activity
+            android:name=".EditDestinationActivity"
+            android:exported="false" />
+
+        <!-- Pantalla principal / catálogo -->
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
+
+        <!-- Pantalla de Login y Registro -->
         <activity
             android:name=".AuthActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
+
     </application>
 
 </manifest>

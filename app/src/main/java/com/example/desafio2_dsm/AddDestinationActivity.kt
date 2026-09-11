@@ -1,3 +1,4 @@
+
 package com.example.desafio2_dsm
 
 import android.app.AlertDialog
@@ -11,13 +12,11 @@ import android.widget.ImageView
 import android.widget.Spinner
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.database.FirebaseDatabase
 
 class AddDestinationActivity : AppCompatActivity() {
 
-    private lateinit var db: FirebaseFirestore
-    private lateinit var storage: FirebaseStorage
+    private lateinit var database: FirebaseDatabase
 
     private lateinit var nameEditText: EditText
     private lateinit var countrySpinner: Spinner
@@ -43,26 +42,18 @@ class AddDestinationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_add_destination)
 
-        db = FirebaseFirestore.getInstance()
-        storage = FirebaseStorage.getInstance()
+        // Realtime Database
+        database = FirebaseDatabase.getInstance()
 
-        nameEditText =
-            findViewById(R.id.nameEditText)
-
-        countrySpinner =
-            findViewById(R.id.countrySpinner)
-
-        priceEditText =
-            findViewById(R.id.priceEditText)
-
-        descriptionEditText =
-            findViewById(R.id.descriptionEditText)
-
-        previewImageView =
-            findViewById(R.id.previewImageView)
+        nameEditText = findViewById(R.id.nameEditText)
+        countrySpinner = findViewById(R.id.countrySpinner)
+        priceEditText = findViewById(R.id.priceEditText)
+        descriptionEditText = findViewById(R.id.descriptionEditText)
+        previewImageView = findViewById(R.id.previewImageView)
 
         val selectImageButton =
             findViewById<Button>(R.id.selectImageButton)
@@ -98,9 +89,7 @@ class AddDestinationActivity : AppCompatActivity() {
 
     private fun selectImage() {
 
-        val intent = Intent(
-            Intent.ACTION_PICK
-        )
+        val intent = Intent(Intent.ACTION_PICK)
 
         intent.type = "image/*"
 
@@ -130,7 +119,9 @@ class AddDestinationActivity : AppCompatActivity() {
 
             imageUri = data?.data
 
-            previewImageView.setImageURI(imageUri)
+            if (imageUri != null) {
+                previewImageView.setImageURI(imageUri)
+            }
         }
     }
 
@@ -148,6 +139,7 @@ class AddDestinationActivity : AppCompatActivity() {
         val description =
             descriptionEditText.text.toString().trim()
 
+        // Validar campos
         if (
             name.isEmpty() ||
             priceText.isEmpty() ||
@@ -162,6 +154,7 @@ class AddDestinationActivity : AppCompatActivity() {
             return
         }
 
+        // Validar precio
         val price = priceText.toDoubleOrNull()
 
         if (price == null || price <= 0) {
@@ -173,6 +166,7 @@ class AddDestinationActivity : AppCompatActivity() {
             return
         }
 
+        // Validar descripción
         if (description.length < 20) {
 
             showError(
@@ -182,6 +176,7 @@ class AddDestinationActivity : AppCompatActivity() {
             return
         }
 
+        // Validar imagen
         if (imageUri == null) {
 
             showError(
@@ -191,53 +186,16 @@ class AddDestinationActivity : AppCompatActivity() {
             return
         }
 
-        uploadImage(
-            name,
-            country,
-            price,
-            description
+        saveToRealtimeDatabase(
+            name = name,
+            country = country,
+            price = price,
+            description = description,
+            imageUrl = imageUri.toString()
         )
     }
 
-    private fun uploadImage(
-        name: String,
-        country: String,
-        price: Double,
-        description: String
-    ) {
-
-        val uri = imageUri ?: return
-
-        val imageRef = storage.reference
-            .child(
-                "destinations/${System.currentTimeMillis()}.jpg"
-            )
-
-        imageRef.putFile(uri)
-            .addOnSuccessListener {
-
-                imageRef.downloadUrl
-                    .addOnSuccessListener { downloadUri ->
-
-                        saveToFirestore(
-                            name,
-                            country,
-                            price,
-                            description,
-                            downloadUri.toString()
-                        )
-                    }
-            }
-            .addOnFailureListener { exception ->
-
-                showError(
-                    exception.message
-                        ?: getString(R.string.error)
-                )
-            }
-    }
-
-    private fun saveToFirestore(
+    private fun saveToRealtimeDatabase(
         name: String,
         country: String,
         price: Double,
@@ -245,7 +203,28 @@ class AddDestinationActivity : AppCompatActivity() {
         imageUrl: String
     ) {
 
+        // Referencia:
+        // Realtime Database
+        // destinations/
+        val destinationsRef =
+            database.getReference("destinations")
+
+        // Generar ID automáticamente
+        val id =
+            destinationsRef.push().key
+
+        if (id == null) {
+
+            showError(
+                "No se pudo generar el ID del destino."
+            )
+
+            return
+        }
+
+        // Crear objeto Destination
         val destination = Destination(
+            id = id,
             name = name,
             country = country,
             price = price,
@@ -253,12 +232,16 @@ class AddDestinationActivity : AppCompatActivity() {
             imageUrl = imageUrl
         )
 
-        db.collection("destinations")
-            .add(destination)
+        // Guardar en Realtime Database
+        destinationsRef
+            .child(id)
+            .setValue(destination)
             .addOnSuccessListener {
 
                 AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.success))
+                    .setTitle(
+                        getString(R.string.success)
+                    )
                     .setMessage(
                         getString(
                             R.string.destination_saved
@@ -285,7 +268,9 @@ class AddDestinationActivity : AppCompatActivity() {
     ) {
 
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.error))
+            .setTitle(
+                getString(R.string.error)
+            )
             .setMessage(message)
             .setPositiveButton(
                 getString(R.string.accept),
