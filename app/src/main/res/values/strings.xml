@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Agencia de Viajes</string>
+    <string name="app_name">Viajes Felices</string>
 
     <!-- Autenticación -->
     <string name="welcome">Bienvenido/a</string>
