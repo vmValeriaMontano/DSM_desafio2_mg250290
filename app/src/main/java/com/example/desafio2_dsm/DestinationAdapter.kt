@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
 class DestinationAdapter(
-    private var destinations: MutableList<Destination>,
+    private val destinations: MutableList<Destination>,
     private val onEditClick: (Destination) -> Unit,
     private val onDeleteClick: (Destination) -> Unit
 ) : RecyclerView.Adapter<DestinationAdapter.DestinationViewHolder>() {
@@ -64,27 +64,38 @@ class DestinationAdapter(
         val destination = destinations[position]
 
         holder.name.text = destination.name
-        holder.country.text = destination.country
+
+        holder.country.text =
+            "País: ${destination.country}"
+
         holder.price.text =
             "$${String.format("%.2f", destination.price)}"
 
         holder.description.text =
             destination.description
 
+        // Mostrar imagen
         Glide.with(holder.itemView.context)
             .load(destination.imageUrl)
+            .placeholder(android.R.drawable.ic_menu_gallery)
+            .error(android.R.drawable.ic_menu_gallery)
             .into(holder.image)
 
+        // Botón editar
         holder.editButton.setOnClickListener {
+
             onEditClick(destination)
         }
 
+        // Botón eliminar
         holder.deleteButton.setOnClickListener {
+
             onDeleteClick(destination)
         }
     }
 
     override fun getItemCount(): Int {
+
         return destinations.size
     }
 
@@ -92,8 +103,16 @@ class DestinationAdapter(
         newList: List<Destination>
     ) {
 
+        // IMPORTANTE:
+        // Hacemos una copia para evitar que
+        // newList sea la misma lista que destinations.
+        val copyOfList =
+            newList.toList()
+
         destinations.clear()
-        destinations.addAll(newList)
+
+        destinations.addAll(copyOfList)
+
         notifyDataSetChanged()
     }
 }

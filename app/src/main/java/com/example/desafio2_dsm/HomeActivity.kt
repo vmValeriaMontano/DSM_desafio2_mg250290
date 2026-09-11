@@ -11,12 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.database.FirebaseDatabase
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
+    private lateinit var database: FirebaseDatabase
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: DestinationAdapter
@@ -25,15 +25,20 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_home)
 
+        // Firebase Authentication
         auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
 
-        val email = intent.getStringExtra("email")
-            ?: auth.currentUser?.email
-            ?: ""
+        // Firebase Realtime Database
+        database = FirebaseDatabase.getInstance()
+
+        val email =
+            intent.getStringExtra("email")
+                ?: auth.currentUser?.email
+                ?: ""
 
         val emailTextView =
             findViewById<TextView>(R.id.emailTextView)
@@ -53,12 +58,12 @@ class HomeActivity : AppCompatActivity() {
 
         addButton.setOnClickListener {
 
-            startActivity(
-                Intent(
-                    this,
-                    AddDestinationActivity::class.java
-                )
+            val intent = Intent(
+                this,
+                AddDestinationActivity::class.java
             )
+
+            startActivity(intent)
         }
 
         logoutButton.setOnClickListener {
@@ -80,13 +85,17 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        // Cada vez que regresamos de agregar/editar,
+        // volvemos a consultar Firebase.
         loadDestinations()
     }
 
     private fun setupRecyclerView() {
 
         adapter = DestinationAdapter(
-            destinations,
+            destinations = destinations,
+
             onEditClick = { destination ->
 
                 val intent = Intent(
@@ -111,34 +120,70 @@ class HomeActivity : AppCompatActivity() {
         recyclerView.layoutManager =
             LinearLayoutManager(this)
 
+        recyclerView.setHasFixedSize(false)
+
         recyclerView.adapter = adapter
     }
 
     private fun loadDestinations() {
 
-        db.collection("destinations")
-            .get()
-            .addOnSuccessListener { result ->
+        val destinationsRef =
+            database.getReference("destinations")
+
+        destinationsRef.get()
+
+            .addOnSuccessListener { snapshot ->
+
+                // Mensaje temporal para comprobar
+                // cuántos destinos encontró Firebase.
+                Toast.makeText(
+                    this,
+                    "Destinos encontrados: ${snapshot.childrenCount}",
+                    Toast.LENGTH_SHORT
+                ).show()
 
                 destinations.clear()
 
-                for (document in result) {
+                for (childSnapshot in snapshot.children) {
 
-                    val destination =
-                        document.toObject(Destination::class.java)
+                    try {
 
-                    destination.id = document.id
+                        val destination =
+                            childSnapshot.getValue(
+                                Destination::class.java
+                            )
 
-                    destinations.add(destination)
+                        if (destination != null) {
+
+                            // Si el ID viene vacío,
+                            // usamos la key de Firebase.
+                            if (destination.id.isEmpty()) {
+
+                                destination.id =
+                                    childSnapshot.key ?: ""
+                            }
+
+                            destinations.add(destination)
+                        }
+
+                    } catch (exception: Exception) {
+
+                        Toast.makeText(
+                            this,
+                            "Error leyendo destino: ${exception.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
 
                 adapter.updateList(destinations)
             }
+
             .addOnFailureListener { exception ->
 
                 Toast.makeText(
                     this,
-                    exception.message,
+                    "Error al cargar destinos:\n${exception.message}",
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -149,18 +194,27 @@ class HomeActivity : AppCompatActivity() {
     ) {
 
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.confirm_delete))
-            .setMessage(getString(R.string.delete_message))
+
+            .setTitle(
+                getString(R.string.confirm_delete)
+            )
+
+            .setMessage(
+                getString(R.string.delete_message)
+            )
+
             .setNegativeButton(
                 getString(R.string.cancel),
                 null
             )
+
             .setPositiveButton(
                 getString(R.string.delete)
             ) { _, _ ->
 
                 deleteDestination(destination)
             }
+
             .show()
     }
 
@@ -168,24 +222,40 @@ class HomeActivity : AppCompatActivity() {
         destination: Destination
     ) {
 
-        db.collection("destinations")
-            .document(destination.id)
-            .delete()
+        if (destination.id.isEmpty()) {
+
+            Toast.makeText(
+                this,
+                "El destino no tiene un ID válido.",
+                Toast.LENGTH_LONG
+            ).show()
+
+            return
+        }
+
+        database
+            .getReference("destinations")
+            .child(destination.id)
+            .removeValue()
+
             .addOnSuccessListener {
 
                 Toast.makeText(
                     this,
-                    getString(R.string.destination_deleted),
+                    getString(
+                        R.string.destination_deleted
+                    ),
                     Toast.LENGTH_SHORT
                 ).show()
 
                 loadDestinations()
             }
+
             .addOnFailureListener { exception ->
 
                 Toast.makeText(
                     this,
-                    exception.message,
+                    "No se pudo eliminar:\n${exception.message}",
                     Toast.LENGTH_LONG
                 ).show()
             }
