@@ -12,13 +12,11 @@ import android.widget.Spinner
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.database.FirebaseDatabase
 
 class EditDestinationActivity : AppCompatActivity() {
 
-    private lateinit var db: FirebaseFirestore
-    private lateinit var storage: FirebaseStorage
+    private lateinit var database: FirebaseDatabase
 
     private lateinit var nameEditText: EditText
     private lateinit var countrySpinner: Spinner
@@ -27,6 +25,7 @@ class EditDestinationActivity : AppCompatActivity() {
     private lateinit var previewImageView: ImageView
 
     private var imageUri: Uri? = null
+
     private var currentImageUrl = ""
 
     private lateinit var destinationId: String
@@ -47,15 +46,17 @@ class EditDestinationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_edit_destination)
 
-        db = FirebaseFirestore.getInstance()
-        storage = FirebaseStorage.getInstance()
+        // Firebase Realtime Database
+        database = FirebaseDatabase.getInstance()
 
         destinationId =
             intent.getStringExtra("destinationId")
                 ?: run {
+                    showError("No se encontró el ID del destino.")
                     finish()
                     return
                 }
@@ -76,12 +77,17 @@ class EditDestinationActivity : AppCompatActivity() {
             findViewById(R.id.previewImageView)
 
         val selectImageButton =
-            findViewById<Button>(R.id.selectImageButton)
+            findViewById<Button>(
+                R.id.selectImageButton
+            )
 
         val updateButton =
-            findViewById<Button>(R.id.updateButton)
+            findViewById<Button>(
+                R.id.updateButton
+            )
 
         setupSpinner()
+
         loadDestination()
 
         selectImageButton.setOnClickListener {
@@ -110,68 +116,95 @@ class EditDestinationActivity : AppCompatActivity() {
 
     private fun loadDestination() {
 
-        db.collection("destinations")
-            .document(destinationId)
+        database
+            .getReference("destinations")
+            .child(destinationId)
             .get()
-            .addOnSuccessListener { document ->
 
-                if (!document.exists()) {
-                    finish()
+            .addOnSuccessListener { snapshot ->
+
+                if (!snapshot.exists()) {
+
+                    showError(
+                        "El destino ya no existe."
+                    )
+
                     return@addOnSuccessListener
                 }
 
                 val destination =
-                    document.toObject(
+                    snapshot.getValue(
                         Destination::class.java
                     )
 
-                if (destination != null) {
+                if (destination == null) {
 
-                    nameEditText.setText(
-                        destination.name
+                    showError(
+                        "No se pudieron leer los datos del destino."
                     )
 
-                    priceEditText.setText(
-                        destination.price.toString()
-                    )
+                    return@addOnSuccessListener
+                }
 
-                    descriptionEditText.setText(
-                        destination.description
-                    )
+                // Nombre
+                nameEditText.setText(
+                    destination.name
+                )
 
-                    currentImageUrl =
-                        destination.imageUrl
+                // Precio
+                priceEditText.setText(
+                    destination.price.toString()
+                )
+
+                // Descripción
+                descriptionEditText.setText(
+                    destination.description
+                )
+
+                // Imagen actual
+                currentImageUrl =
+                    destination.imageUrl
+
+                if (currentImageUrl.isNotEmpty()) {
 
                     Glide.with(this)
-                        .load(destination.imageUrl)
+                        .load(currentImageUrl)
+                        .placeholder(
+                            android.R.drawable.ic_menu_gallery
+                        )
+                        .error(
+                            android.R.drawable.ic_menu_gallery
+                        )
                         .into(previewImageView)
+                }
 
-                    val countryIndex =
-                        countries.indexOf(
-                            destination.country
-                        )
+                // País
+                val countryIndex =
+                    countries.indexOf(
+                        destination.country
+                    )
 
-                    if (countryIndex >= 0) {
-                        countrySpinner.setSelection(
-                            countryIndex
-                        )
-                    }
+                if (countryIndex >= 0) {
+
+                    countrySpinner.setSelection(
+                        countryIndex
+                    )
                 }
             }
+
             .addOnFailureListener { exception ->
 
                 showError(
                     exception.message
-                        ?: getString(R.string.error)
+                        ?: "No se pudo cargar el destino."
                 )
             }
     }
 
     private fun selectImage() {
 
-        val intent = Intent(
-            Intent.ACTION_PICK
-        )
+        val intent =
+            Intent(Intent.ACTION_PICK)
 
         intent.type = "image/*"
 
@@ -201,26 +234,38 @@ class EditDestinationActivity : AppCompatActivity() {
 
             imageUri = data?.data
 
-            previewImageView.setImageURI(
-                imageUri
-            )
+            if (imageUri != null) {
+
+                previewImageView.setImageURI(
+                    imageUri
+                )
+            }
         }
     }
 
     private fun updateDestination() {
 
         val name =
-            nameEditText.text.toString().trim()
+            nameEditText.text
+                .toString()
+                .trim()
 
         val country =
-            countrySpinner.selectedItem.toString()
+            countrySpinner
+                .selectedItem
+                .toString()
 
         val priceText =
-            priceEditText.text.toString().trim()
+            priceEditText.text
+                .toString()
+                .trim()
 
         val description =
-            descriptionEditText.text.toString().trim()
+            descriptionEditText.text
+                .toString()
+                .trim()
 
+        // Validar campos
         if (
             name.isEmpty() ||
             priceText.isEmpty() ||
@@ -229,93 +274,70 @@ class EditDestinationActivity : AppCompatActivity() {
         ) {
 
             showError(
-                getString(R.string.required_fields)
+                getString(
+                    R.string.required_fields
+                )
             )
 
             return
         }
 
+        // Validar precio
         val price =
             priceText.toDoubleOrNull()
 
-        if (price == null || price <= 0) {
+        if (
+            price == null ||
+            price <= 0
+        ) {
 
             showError(
-                getString(R.string.invalid_price)
+                getString(
+                    R.string.invalid_price
+                )
             )
 
             return
         }
 
+        // Validar descripción
         if (description.length < 20) {
 
             showError(
-                getString(R.string.short_description)
+                getString(
+                    R.string.short_description
+                )
             )
 
             return
         }
 
-        if (imageUri != null) {
+        /*
+         * IMPORTANTE:
+         *
+         * No usamos Firebase Storage.
+         *
+         * Si el usuario NO seleccionó una imagen nueva,
+         * conservamos la imagen que ya tenía.
+         *
+         * Si seleccionó una imagen nueva, guardamos
+         * temporalmente su URI local.
+         */
 
-            uploadNewImage(
-                name,
-                country,
-                price,
-                description
-            )
+        val imageToSave =
+            imageUri?.toString()
+                ?: currentImageUrl
 
-        } else {
-
-            updateFirestore(
-                name,
-                country,
-                price,
-                description,
-                currentImageUrl
-            )
-        }
+        saveChanges(
+            name = name,
+            country = country,
+            price = price,
+            description = description,
+            imageUrl = imageToSave
+        )
     }
 
-    private fun uploadNewImage(
-        name: String,
-        country: String,
-        price: Double,
-        description: String
-    ) {
-
-        val uri = imageUri ?: return
-
-        val imageRef = storage.reference
-            .child(
-                "destinations/${System.currentTimeMillis()}.jpg"
-            )
-
-        imageRef.putFile(uri)
-            .addOnSuccessListener {
-
-                imageRef.downloadUrl
-                    .addOnSuccessListener { downloadUri ->
-
-                        updateFirestore(
-                            name,
-                            country,
-                            price,
-                            description,
-                            downloadUri.toString()
-                        )
-                    }
-            }
-            .addOnFailureListener { exception ->
-
-                showError(
-                    exception.message
-                        ?: getString(R.string.error)
-                )
-            }
-    }
-
-    private fun updateFirestore(
+    private fun saveChanges(
         name: String,
         country: String,
         price: Double,
@@ -323,38 +345,53 @@ class EditDestinationActivity : AppCompatActivity() {
         imageUrl: String
     ) {
 
-        val updates = hashMapOf<String, Any>(
-            "name" to name,
-            "country" to country,
-            "price" to price,
-            "description" to description,
-            "imageUrl" to imageUrl
-        )
+        val updates =
+            hashMapOf<String, Any>(
+                "name" to name,
+                "country" to country,
+                "price" to price,
+                "description" to description,
+                "imageUrl" to imageUrl
+            )
 
-        db.collection("destinations")
-            .document(destinationId)
-            .update(updates)
+        database
+            .getReference("destinations")
+            .child(destinationId)
+            .updateChildren(updates)
+
             .addOnSuccessListener {
 
                 AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.success))
+
+                    .setTitle(
+                        getString(
+                            R.string.success
+                        )
+                    )
+
                     .setMessage(
                         getString(
                             R.string.destination_updated
                         )
                     )
+
                     .setPositiveButton(
-                        getString(R.string.accept)
+                        getString(
+                            R.string.accept
+                        )
                     ) { _, _ ->
+
                         finish()
                     }
+
                     .show()
             }
+
             .addOnFailureListener { exception ->
 
                 showError(
                     exception.message
-                        ?: getString(R.string.error)
+                        ?: "No se pudo actualizar el destino."
                 )
             }
     }
@@ -364,12 +401,22 @@ class EditDestinationActivity : AppCompatActivity() {
     ) {
 
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.error))
+
+            .setTitle(
+                getString(
+                    R.string.error
+                )
+            )
+
             .setMessage(message)
+
             .setPositiveButton(
-                getString(R.string.accept),
+                getString(
+                    R.string.accept
+                ),
                 null
             )
+
             .show()
     }
 }
