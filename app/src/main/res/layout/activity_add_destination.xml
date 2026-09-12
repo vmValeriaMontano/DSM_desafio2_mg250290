@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -67,7 +68,7 @@
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_secondary" />
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/selectImageButton"
             android:layout_width="match_parent"
             android:layout_height="@dimen/button_height"
@@ -76,7 +77,11 @@
             android:text="@string/select_image"
             android:textColor="@color/white"
             android:textSize="@dimen/text_size_normal"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:gravity="center"
+            android:drawablePadding="8dp"
+            app:drawableStartCompat="@drawable/ic_image"
+            app:drawableTint="@color/white" />
 
         <ImageView
             android:id="@+id/previewImageView"
@@ -87,7 +92,7 @@
             android:contentDescription="@string/select_image"
             android:scaleType="centerCrop" />
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/saveButton"
             android:layout_width="match_parent"
             android:layout_height="@dimen/button_height"
@@ -97,7 +102,11 @@
             android:text="@string/save"
             android:textColor="@color/white"
             android:textSize="@dimen/text_size_normal"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:gravity="center"
+            android:drawablePadding="8dp"
+            app:drawableStartCompat="@drawable/ic_save"
+            app:drawableTint="@color/white" />
 
     </LinearLayout>
 
