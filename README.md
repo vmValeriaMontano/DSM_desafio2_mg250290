@@ -1,6 +1,9 @@
 # Desafío 2 - DSM 
 ## Valeria Montano MG250290 
 
+### Link de video
+https://youtu.be/ceLftbtLo-g
+
 ## Aplicación de Destinos Turísticos
 
 Aplicación móvil desarrollada en **Android Studio utilizando Kotlin**, orientada a la gestión de destinos turísticos. La aplicación utiliza **Firebase** para la autenticación de usuarios y el almacenamiento de información.
