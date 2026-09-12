@@ -12,6 +12,12 @@ import android.widget.Spinner
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.FirebaseDatabase
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 
 class AddDestinationActivity : AppCompatActivity() {
 
@@ -25,6 +31,20 @@ class AddDestinationActivity : AppCompatActivity() {
 
     private var imageUri: Uri? = null
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+
+        if (isGranted) {
+            selectImage()
+        } else {
+            Toast.makeText(
+                this,
+                "Necesitas permitir el acceso a las imágenes",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
     private val countries = listOf(
         "Selecciona un país",
         "México",
@@ -79,11 +99,33 @@ class AddDestinationActivity : AppCompatActivity() {
         setupSpinner()
 
         selectImageButton.setOnClickListener {
-            selectImage()
+            pedirPermisoGaleria()
         }
 
         saveButton.setOnClickListener {
             saveDestination()
+        }
+    }
+    private fun pedirPermisoGaleria() {
+
+        val permiso = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        if (
+            ContextCompat.checkSelfPermission(
+                this,
+                permiso
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            requestPermissionLauncher.launch(permiso)
+
+        } else {
+
+            selectImage()
         }
     }
 

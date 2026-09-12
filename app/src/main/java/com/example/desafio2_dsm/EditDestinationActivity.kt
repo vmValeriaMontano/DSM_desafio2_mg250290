@@ -1,16 +1,22 @@
 package com.example.desafio2_dsm
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.google.firebase.database.FirebaseDatabase
 
@@ -25,6 +31,21 @@ class EditDestinationActivity : AppCompatActivity() {
     private lateinit var previewImageView: ImageView
 
     private var imageUri: Uri? = null
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+
+        if (isGranted) {
+            selectImage()
+        } else {
+            Toast.makeText(
+                this,
+                "Necesitas permitir el acceso a las imágenes",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
     private var currentImageUrl = ""
 
@@ -116,11 +137,34 @@ class EditDestinationActivity : AppCompatActivity() {
         loadDestination()
 
         selectImageButton.setOnClickListener {
-            selectImage()
+            pedirPermisoGaleria()
         }
 
         updateButton.setOnClickListener {
             updateDestination()
+        }
+    }
+
+    private fun pedirPermisoGaleria() {
+
+        val permiso = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        if (
+            ContextCompat.checkSelfPermission(
+                this,
+                permiso
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            requestPermissionLauncher.launch(permiso)
+
+        } else {
+
+            selectImage()
         }
     }
 
